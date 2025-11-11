@@ -1,58 +1,88 @@
 ; ==================================
-; Piano de prueba sin sonido (NASM + DOSBox)
+; Piano en ensamblador (NASM + DOSBox)
 ; ==================================
 ; Uso:
-;   nasm -f bin piano.asm -o piano.com
-;   En DOSBox: piano
+; nasm -f bin piano.asm -o piano.com
+; Luego ejecutar: piano
 ; ==================================
 
 org 100h
 
-msg db "Piano en ensamblador - Prueba sin sonido",13,10
-    db "Presione A S D F G H J K L (ESC para salir)",13,10,"$"
+msg db "Piano en ensamblador - Presione A S D F G H J K L (ESC para salir)$"
 
-keys db 'a','s','d','f','g','h','j','k','l',0
-notes db "Do  Re  Mi  Fa  Sol La  Si  Do5 Re5",0
+notes:
+    dw 4545, 4049, 3607, 3400, 3030, 2703, 2407, 2272, 2024  ; Notas C4–D5
+keys:
+    db 'a','s','d','f','g','h','j','k','l',0
 
-; -----------------------------------
+; ---------------------------
 start:
     mov ah, 09h
     mov dx, msg
     int 21h
 
 main_loop:
-    mov ah, 1
-    int 16h         ; Chequear tecla
-    jz main_loop    ; Si no hay, seguir
-
+    ; Esperar una tecla (bloqueante)
     mov ah, 0
-    int 16h         ; Leer tecla
+    int 16h
     mov bl, al
 
-    cmp bl, 27      ; ESC = salir
-    je salir
+    cmp bl, 27      ; ESC para salir
+    je exit_program
 
-    mov ah, 02h
-    mov dl, bl
-    int 21h         ; Mostrar tecla presionada
+    ; Buscar tecla en la lista
+    mov si, keys
+    xor cx, cx
+find_key:
+    mov al, [si]
+    cmp al, 0
+    je main_loop     ; si no la encuentra, ignora
+    cmp al, bl
+    je play_note
+    inc si
+    inc cx
+    jmp find_key
 
-    mov ah, 0Eh     ; Salto de línea
-    mov al, 13
-    int 10h
-    mov al, 10
-    int 10h
-
+; ---------------------------
+play_note:
+    mov bx, cx
+    shl bx, 1
+    mov ax, [notes + bx]
+    call beep
     jmp main_loop
 
-salir:
-    mov ah, 09h
-    mov dx, fin
-    int 21h
+; ---------------------------
+beep:
+    push ax
+    push bx
+    push dx
 
-    mov ah, 7       ; Esperar una tecla antes de salir
-    int 21h
+    mov bx, ax
+    mov al, 0b6h
+    out 43h, al
+    mov ax, bx
+    out 42h, al
+    mov al, ah
+    out 42h, al
 
+    in al, 61h
+    or al, 03h
+    out 61h, al
+
+    mov cx, 0FFFFh
+.delay:
+    loop .delay
+
+    in al, 61h
+    and al, 0FCh
+    out 61h, al
+
+    pop dx
+    pop bx
+    pop ax
+    ret
+
+; ---------------------------
+exit_program:
     mov ax, 4C00h
     int 21h
-
-fin db 13,10,"Saliendo del piano...$"
