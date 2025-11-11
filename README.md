@@ -8,21 +8,27 @@ Las notas se reproducen mediante el altavoz interno del PC (PC speaker) usando i
 
 <img src="img/mockup.png" alt="imagen de como quiero que quede">
 
-<h2>🧠 Cómo funciona</h2>
-Usa interrupciones del BIOS (INT 16h) para leer el teclado.
+<h2>Cómo funciona</h2>
+<li>
+    <ul>Usa interrupciones del BIOS (INT 16h) para leer el teclado.</ul>
+    <ul>Genera sonido con los puertos 43h, 42h y 61h, que controlan el temporizador y el altavoz del sistema.</ul>
+    <ul>Cada tecla corresponde a una frecuencia diferente almacenada en una tabla (notes).</ul>
+</li>
 
-Genera sonido con los puertos 43h, 42h y 61h, que controlan el temporizador y el altavoz del sistema.
+<h2>Posibles mejoras</h2>
 
-Cada tecla corresponde a una frecuencia diferente almacenada en una tabla (notes).
+<li>
+    <ul>Mostrar en pantalla el nombre de la nota presionada (por ejemplo: “C4”, “D4”, “E4”…).</ul>
+    <ul>Permitir cambiar la duración de las notas.</ul>
+    <ul>Agregar más octavas (teclas adicionales).</ul>
+    <ul>Implementar pausas o grabación de melodías.</ul>
+    <ul>Incluir colores y animaciones en texto para hacerlo más visual.</ul>
+</li>
 
-🚀 Posibles mejoras
 
-Mostrar en pantalla el nombre de la nota presionada (por ejemplo: “C4”, “D4”, “E4”…).
 
-Permitir cambiar la duración de las notas.
 
-Agregar más octavas (teclas adicionales).
 
-Implementar pausas o grabación de melodías.
 
-Incluir colores y animaciones en texto para hacerlo más visual.
+
+
