@@ -1,120 +1,58 @@
 ; ==================================
-; Piano en ensamblador (NASM + DOSBox)
+; Piano de prueba sin sonido (NASM + DOSBox)
 ; ==================================
-; Versión: en desarrollo (funcional parcialmente)
-; Uso: nasm -f bin piano.asm -o piano.com
-; Ejecutar en DOSBox: piano
+; Uso:
+;   nasm -f bin piano.asm -o piano.com
+;   En DOSBox: piano
 ; ==================================
 
-org 100h          ; Programa tipo .COM
+org 100h
 
-; -------------------
-; Datos
-; -------------------
-msg db "Piano en ensamblador - Presione A S D F G H J K L (ESC para salir)$"
+msg db "Piano en ensamblador - Prueba sin sonido",13,10
+    db "Presione A S D F G H J K L (ESC para salir)",13,10,"$"
 
-notes:
-    dw 4545, 4049, 3607, 3400, 3030, 2703, 2407, 2272, 2024  ; Frecuencias aproximadas C4–D5
-keys:
-    db 'a','s','d','f','g','h','j','k','l',0
+keys db 'a','s','d','f','g','h','j','k','l',0
+notes db "Do  Re  Mi  Fa  Sol La  Si  Do5 Re5",0
 
-; -------------------
-; Código principal
-; -------------------
+; -----------------------------------
 start:
     mov ah, 09h
     mov dx, msg
     int 21h
 
 main_loop:
-    call play_key
-    jmp main_loop
-
-; -------------------
-; Subrutinas
-; -------------------
-
-; --- Lee una tecla y toca nota ---
-play_key:
-    push ax
-    push bx
-    push cx
-    push dx
-    push si
-
     mov ah, 1
-    int 16h
-    jz .no_key       ; No hay tecla
+    int 16h         ; Chequear tecla
+    jz main_loop    ; Si no hay, seguir
 
     mov ah, 0
-    int 16h
-    mov bl, al       ; Tecla presionada en BL
+    int 16h         ; Leer tecla
+    mov bl, al
 
-    cmp bl, 27       ; ESC
-    je exit_program
+    cmp bl, 27      ; ESC = salir
+    je salir
 
-    mov si, keys
-    xor cx, cx
-.find_key:
-    mov al, [si]
-    cmp al, 0
-    je .done
-    cmp al, bl
-    je .found
-    inc si
-    inc cx
-    jmp .find_key
+    mov ah, 02h
+    mov dl, bl
+    int 21h         ; Mostrar tecla presionada
 
-.found:
-    mov bx, cx
-    shl bx, 1
-    mov ax, [notes + bx]
-    call beep
-    jmp .done
+    mov ah, 0Eh     ; Salto de línea
+    mov al, 13
+    int 10h
+    mov al, 10
+    int 10h
 
-.no_key:
-    jmp .done
+    jmp main_loop
 
-.done:
-    pop si
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
+salir:
+    mov ah, 09h
+    mov dx, fin
+    int 21h
 
-; --- Genera sonido en el altavoz del PC ---
-beep:
-    push ax
-    push bx
-    push dx
+    mov ah, 7       ; Esperar una tecla antes de salir
+    int 21h
 
-    mov bx, ax
-    mov al, 0b6h
-    out 43h, al
-    mov ax, bx
-    out 42h, al
-    mov al, ah
-    out 42h, al
-
-    in al, 61h
-    or al, 03h
-    out 61h, al
-
-    mov cx, 0FFFFh
-.delay:
-    loop .delay
-
-    in al, 61h
-    and al, 0FCh
-    out 61h, al
-
-    pop dx
-    pop bx
-    pop ax
-    ret
-
-; --- Salida del programa ---
-exit_program:
     mov ax, 4C00h
     int 21h
+
+fin db 13,10,"Saliendo del piano...$"
