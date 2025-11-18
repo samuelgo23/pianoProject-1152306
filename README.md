@@ -25,6 +25,8 @@ Piano virtual interactivo desarrollado completamente en ensamblador x86, con int
 
 ## ✨ Características
 
+<img src="img/final.png" alt="mockup">
+
 - **Interfaz Gráfica**: Modo VGA 13h (320x200 píxeles, 256 colores)
 - **17 Notas Musicales**: 10 teclas blancas + 7 teclas negras
 - **Rango Musical**: C4 (Do) hasta E5 (Mi) - 1.5 octavas
