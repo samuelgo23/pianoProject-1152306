@@ -5,9 +5,6 @@
 org 100h
 
 start:
-    ; Mostrar pantalla de instrucciones
-    call mostrar_instrucciones
-    
     ; Modo gráfico 13h
     mov ax, 0013h
     int 10h
@@ -136,6 +133,9 @@ start:
     mov al, 8
     mov bp, 15
     call dibujar_rect
+    
+    ; === ESCRIBIR TEXTO EN MODO GRÁFICO ===
+    call escribir_textos
 
 ; === BUCLE PRINCIPAL ===
 bucle:
@@ -307,24 +307,61 @@ tocar_beep:
     pop ax
     ret
 
+escribir_textos:
+    ; Título "Piano" en fila 1
+    mov ah, 02h         ; Posicionar cursor
+    mov bh, 0
+    mov dh, 1           ; Fila 1
+    mov dl, 37          ; Columna 37 (centrado)
+    int 10h
+    
+    mov si, txt_piano
+    mov bl, 15          ; Color blanco
+    call escribir_string
+    
+    ; Teclas en fila 23
+    mov ah, 02h
+    mov bh, 0
+    mov dh, 23
+    mov dl, 1
+    int 10h
+    
+    mov si, txt_teclas
+    mov bl, 14          ; Color amarillo
+    call escribir_string
+    
+    ; ESC en fila 24
+    mov ah, 02h
+    mov bh, 0
+    mov dh, 24
+    mov dl, 1
+    int 10h
+    
+    mov si, txt_esc
+    mov bl, 14
+    call escribir_string
+    
+    ret
+
+escribir_string:
+    push ax
+    push bx
+    push si
+.loop_char:
+    lodsb               ; Cargar byte de [SI] en AL
+    cmp al, 0           ; ¿Fin de string?
+    je .fin
+    mov ah, 0Eh         ; Función teletype
+    mov bh, 0
+    int 10h
+    jmp .loop_char
+.fin:
+    pop si
+    pop bx
+    pop ax
+    ret
+
 mostrar_instrucciones:
-    mov ah, 09h
-    mov dx, msg_titulo
-    int 21h
-    mov ah, 09h
-    mov dx, msg_blancas
-    int 21h
-    mov ah, 09h
-    mov dx, msg_negras
-    int 21h
-    mov ah, 09h
-    mov dx, msg_esc
-    int 21h
-    mov ah, 09h
-    mov dx, msg_continuar
-    int 21h
-    mov ah, 0
-    int 16h
     ret
 
 salir_programa:
@@ -334,8 +371,6 @@ salir_programa:
     int 21h
 
 ; === DATOS ===
-msg_titulo db 13,10,'         Piano en Ensamblador',13,10,10,'$'
-msg_blancas db ' Teclas blancas: A S D F G H J K L N',13,10,'$'
-msg_negras db ' Teclas negras:  W E   T Y U I O',13,10,10,'$'
-msg_esc db ' Presiona ESC para salir',13,10,10,'$'
-msg_continuar db ' Presiona cualquier tecla para comenzar...$'
+txt_piano db 'Piano',0
+txt_teclas db 'Teclas: A S D F G H J K L ',164,' - W E T Y U I O',0
+txt_esc db 'Pulsa ESC para salir',0
