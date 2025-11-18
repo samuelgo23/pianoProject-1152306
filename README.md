@@ -1,206 +1,306 @@
-🎹 Piano Virtual en Ensamblador x86
-Piano Gráfico Interactivo para DOS / DOSBox
+# 🎹 Piano Virtual en Ensamblador x86
 
-Ejecutable: piano3.com
-Lenguaje: Ensamblador x86 (NASM)
-Peso: ~500 bytes
+![Ensamblador](https://img.shields.io/badge/Language-x86%20Assembly-blue)
+![Platform](https://img.shields.io/badge/Platform-DOS%2FDOSBox-green)
+![Size](https://img.shields.io/badge/Size-~500%20bytes-orange)
 
-📌 Descripción General
+Piano virtual interactivo desarrollado completamente en ensamblador x86, con interfaz gráfica VGA y generación de sonido mediante PC Speaker.
 
-Este proyecto implementa un piano virtual completamente funcional escrito en ensamblador x86, usando:
+---
 
-Modo gráfico VGA 13h (320×200, 256 colores)
+## 📋 Índice
 
-PC Speaker para generar sonido real
+- [Características](#-características)
+- [Requisitos](#-requisitos)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Arquitectura Técnica](#-arquitectura-técnica)
+- [Controles](#-controles)
+- [Notas Musicales](#-notas-musicales)
+- [Compilación](#-compilación)
+- [Estructura del Código](#-estructura-del-código)
+- [Contribuir](#-contribuir)
 
-Entrada por teclado
+---
 
-Representación visual de teclas blancas y negras
+## ✨ Características
 
-El programa permite tocar 17 notas musicales desde C4 (Do) hasta E5 (Mi), mostrando un teclado gráfico interactivo.
+- **Interfaz Gráfica**: Modo VGA 13h (320x200 píxeles, 256 colores)
+- **17 Notas Musicales**: 10 teclas blancas + 7 teclas negras
+- **Rango Musical**: C4 (Do) hasta E5 (Mi) - 1.5 octavas
+- **Sonido Real**: Generación mediante PC Speaker (Timer 8253)
+- **Ultra Compacto**: Menos de 500 bytes de código ejecutable
+- **Compatible**: Funciona en DOSBox y hardware x86 real
 
-🎯 Objetivo
+---
 
-Crear un piano virtual minimalista pero funcional, demostrando:
+## 💻 Requisitos
 
-Dominio de gráficos VGA en modo 13h
+- **Ensamblador**: NASM (Netwide Assembler)
+- **Emulador**: DOSBox 0.74 o superior
+- **Sistema**: Compatible con arquitectura x86
 
-Generación de sonido mediante el temporizador PIT 8253
+---
 
-Lectura directa del teclado
+## 🚀 Instalación
 
-Optimización extrema en ensamblador x86 real-mode
+1. **Clonar o descargar** el repositorio
+2. **Compilar** el código fuente (ver sección [Compilación](#-compilación))
+3. **Ejecutar** en DOSBox
 
-✨ Características
+---
 
-🎨 Interfaz gráfica en VGA 13h
+## 🎮 Uso
 
-🎶 17 notas musicales (10 blancas + 7 negras)
+### Ejecutar en DOSBox
 
-🔊 PC Speaker controlado por puertos 42h/43h/61h
-
-⚡ Código altamente optimizado (<500 bytes)
-
-💻 Totalmente compatible con DOSBox
-
-🎼 Distribución de Teclas
-Teclas Blancas (Notas naturales)
-Tecla	Nota	Frecuencia
-A	C4	261.63 Hz
-S	D4	293.66 Hz
-D	E4	329.63 Hz
-F	F4	349.23 Hz
-G	G4	392.00 Hz
-H	A4	440.00 Hz
-J	B4	493.88 Hz
-K	C5	523.25 Hz
-L	D5	587.33 Hz
-Ñ	E5	659.25 Hz
-Teclas Negras (Sostenidos)
-Tecla	Nota
-W	C#4
-E	D#4
-T	F#4
-Y	G#4
-U	A#4
-I	C#5
-O	D#5
-Control
-
-ESC → Salir del programa
-
-🛠 Instalación y Ejecución
-✔ 1. Compilar
-nasm -f bin piano.asm -o piano3.com
-
-✔ 2. Ejecutar en DOSBox
+```bash
 mount c C:\ruta\al\proyecto
 c:
 piano3
+```
 
-🧩 Arquitectura del Sistema
-┌───────────────────────────┐
-│     Entrada del Usuario   │ (INT 16h)
-└──────────────┬────────────┘
-               │
-┌──────────────▼────────────┐
-│ Procesamiento de teclas   │
-└──────────────┬────────────┘
-               │
-        ┌──────┴───────┐
-        │              │
-┌───────▼──────┐   ┌───▼──────────┐
-│  PC Speaker   │   │ Gráficos VGA │
-│ (Timer 8253)  │   │  (0A000h)    │
-└───────────────┘   └──────────────┘
+### Salir del Programa
 
-📐 Modo Gráfico 13h (VGA)
+Presiona **ESC** para salir
 
-Resolución: 320×200
+---
 
-Colores: 256
+## 🏗️ Arquitectura Técnica
 
-Memoria: 0A000h:0000h
+### Componentes Principales
 
-Offset pixel = y * 320 + x
+```
+┌─────────────────────┐
+│  Entrada (Teclado)  │
+│     INT 16h         │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│   Procesamiento     │
+│   Comparaciones     │
+└──────────┬──────────┘
+           │
+     ┌─────┴─────┐
+     │           │
+┌────▼────┐ ┌───▼────┐
+│ Sonido  │ │Gráficos│
+│ Speaker │ │  VGA   │
+└─────────┘ └────────┘
+```
 
-Colores usados
-Color	Uso
-0	Fondo negro
-8	Teclas negras
-14	Texto
-15	Teclas blancas
-🔊 Sistema de Sonido
+### Mapa de Memoria
 
-El piano usa el temporizador PIT 8253:
+- **Segmento de Video**: `0A000h - 0AFFFFh` (64 KB)
+- **Cálculo de offset**: `Y × 320 + X`
+- **Ejemplo**: Píxel en (100, 50) = `50 × 320 + 100 = 16100 bytes`
 
-Puerto 43h → Control
+### Generación de Sonido
 
-Puerto 42h → Divisor
+El PC Speaker se programa mediante el Timer 8253:
 
-Puerto 61h → Encendido/apagado del speaker
+```
+Frecuencia = 1193180 / Divisor
+```
 
-Fórmula:
+**Puertos utilizados**:
+- `43h`: Registro de control del timer
+- `42h`: Contador/divisor de frecuencia
+- `61h`: Control del speaker (on/off)
 
-Frecuencia = 1193180 / divisor
+---
 
+## 🎹 Controles
 
-Incluye 17 divisores precalculados para precisión.
+### Teclas Blancas (Notas Naturales)
 
-⚙️ Optimización y Rendimiento
+| Tecla | Nota | Frecuencia |
+|-------|------|------------|
+| A | Do (C4) | 261.63 Hz |
+| S | Re (D4) | 293.66 Hz |
+| D | Mi (E4) | 329.63 Hz |
+| F | Fa (F4) | 349.23 Hz |
+| G | Sol (G4) | 392.00 Hz |
+| H | La (A4) | 440.00 Hz |
+| J | Si (B4) | 493.88 Hz |
+| K | Do (C5) | 523.25 Hz |
+| L | Re (D5) | 587.33 Hz |
+| Ñ | Mi (E5) | 659.25 Hz |
 
-Optimizaciones implementadas:
+### Teclas Negras (Sostenidos)
 
-Uso intensivo de registros en lugar de memoria
+| Tecla | Nota | Frecuencia |
+|-------|------|------------|
+| W | Do# (C#4) | 277.18 Hz |
+| E | Re# (D#4) | 311.13 Hz |
+| T | Fa# (F#4) | 369.99 Hz |
+| Y | Sol# (G#4) | 415.30 Hz |
+| U | La# (A#4) | 466.16 Hz |
+| I | Do# (C#5) | 554.37 Hz |
+| O | Re# (D#5) | 622.25 Hz |
 
-Dibujado acelerado con rep stosb
+---
 
-Protección de registros con push/pop
+## 🔨 Compilación
 
-Cálculo eficiente de offsets
+### Con NASM
 
-Teclas espaciadas visualmente (25 px c/u)
+```bash
+nasm -f bin piano.asm -o piano3.com
+```
 
-Consumo:
+### Parámetros
 
-RAM: <1 KB
+- `-f bin`: Formato binario plano (ejecutable .COM)
+- `-o piano3.com`: Nombre del archivo de salida
 
-Tamaño ejecutable: ~500 bytes
+---
 
-Latencia sonora: ~65 ms
+## 📁 Estructura del Código
 
-🧭 Problemas Resueltos
-Problema	Causa	Solución
-Bucle infinito	mul dañaba CX	push/pop
-Colores incorrectos	AL modificado	guardar color
-Teclas pegadas	ancho muy grande	espaciar 32px
-Texto no visible	INT 10h incorrecto	teletype AH=0Eh
-🚀 Mejoras Futuras
+### Secciones Principales
 
- Grabación y reproducción de notas
+| Líneas | Sección | Descripción |
+|--------|---------|-------------|
+| 1-20 | Inicialización | Modo gráfico 13h, segmento de video |
+| 21-150 | Renderizado | Dibujo de teclas y texto |
+| 151-200 | Bucle Principal | Captura de teclado y procesamiento |
+| 201-300 | Funciones Auxiliares | `dibujar_rect`, `tocar_beep`, etc. |
 
- Sostenido (SHIFT)
+### Funciones Principales
 
- Más octavas
+- **`dibujar_rect`**: Dibuja rectángulos en pantalla (teclas)
+- **`tocar_beep`**: Genera tonos musicales mediante PC Speaker
+- **`escribir_textos`**: Muestra instrucciones en pantalla
+- **`escribir_string`**: Función auxiliar de escritura de texto
 
- Sprites para texto
+---
 
- Double buffering
+## 🎨 Modo Gráfico VGA 13h
 
- Sonido mejorado vía Sound Blaster
+### Especificaciones
 
-🏁 Conclusiones
+- **Resolución**: 320×200 píxeles
+- **Colores**: 256 colores (paleta)
+- **Memoria**: Linear frame buffer
+- **Dirección base**: `0A000h:0000h`
 
-Este proyecto demuestra que es posible crear un instrumento musical gráfico funcional en ensamblador puro, interactuando directamente con:
+### Paleta de Colores Utilizada
 
-Hardware VGA
+| Color | Valor | Uso |
+|-------|-------|-----|
+| Negro | 0 | Fondo |
+| Gris oscuro | 8 | Teclas negras |
+| Amarillo | 14 | Texto de instrucciones |
+| Blanco | 15 | Teclas blancas y título |
 
-PC Speaker
+---
 
-BIOS
+## ⚡ Optimizaciones Implementadas
 
-Puertos I/O
+1. **Uso intensivo de registros** en lugar de memoria RAM
+2. **Instrucción `STOSB`** con `REP` para dibujado rápido
+3. **Cálculo eficiente de offsets** (multiplicación por 320 optimizada)
+4. **Protección de registros** con `PUSH/POP` en funciones críticas
 
-Es un ejercicio completo de:
+### Consumo de Recursos
 
-Programación de bajo nivel
+- **Memoria RAM**: < 1 KB
+- **Tamaño ejecutable**: ~500 bytes
+- **CPU**: Compatible con 8086
+- **Latencia de sonido**: ~65ms por nota
 
-Control preciso de hardware
+---
 
-Optimización extrema
+## 🐛 Problemas Resueltos
 
-Diseño gráfico simple pero eficiente
+### 1. Bucle infinito en dibujo
+- **Causa**: Registro CX corrupto por `MUL`
+- **Solución**: Protección con `PUSH/POP`
 
-📚 Anexos
-Interrupciones usadas
-INT	AH	Función	Uso
-10h	00h	Modo video	VGA 13h
-10h	02h	Cursor	Posición texto
-10h	0Eh	Teletype	Texto
-16h	00h	Leer tecla	Input
-21h	4Ch	Exit	Finalizar
-Puertos I/O
-Puerto	Uso
-42h	Divisor del timer
-43h	Registro de control
-61h	Control del speaker
+### 2. Colores incorrectos
+- **Causa**: Registro AL modificado
+- **Solución**: Guardar color en DH
+
+### 3. Teclas sin separación
+- **Causa**: Ancho de 30px sin espacio
+- **Solución**: Teclas de 25px con espaciado de 32px
+
+### 4. Texto invisible
+- **Causa**: Uso incorrecto de INT 10h
+- **Solución**: Implementar teletype (AH=0Eh)
+
+---
+
+## 🚀 Mejoras Futuras
+
+### Funcionalidades
+- [ ] Grabación y reproducción de secuencias
+- [ ] Diferentes instrumentos (formas de onda)
+- [ ] Control de volumen
+- [ ] Indicador visual de tecla presionada
+- [ ] Más octavas (extender rango)
+- [ ] Pedal de sostenido (tecla SHIFT)
+
+### Optimizaciones Técnicas
+- [ ] Modo protegido VESA
+- [ ] Tabla de sprites para caracteres
+- [ ] Double buffering (evitar parpadeo)
+- [ ] Soporte Sound Blaster
+
+---
+
+## 📚 Interrupciones BIOS Utilizadas
+
+| INT | AH | Función | Uso |
+|-----|----|---------|----|
+| 10h | 00h | Establecer modo video | Modo gráfico 13h |
+| 10h | 02h | Posicionar cursor | Ubicar texto |
+| 10h | 0Eh | Teletype output | Escribir caracteres |
+| 16h | 00h | Leer tecla | Entrada usuario |
+| 21h | 4Ch | Terminar programa | Salir |
+
+---
+
+## 🔧 Puertos I/O Utilizados
+
+| Puerto | Descripción | Operación |
+|--------|-------------|-----------|
+| 42h | Timer Counter 2 | OUT (divisor) |
+| 43h | Timer Control Register | OUT (comando) |
+| 61h | PC Speaker Control | IN/OUT (on/off) |
+
+---
+
+## 🎓 Aprendizajes
+
+Este proyecto permite comprender:
+
+- **Programación de bajo nivel**: Manejo directo de hardware (VGA, Timer, Speaker)
+- **Arquitectura x86**: Interrupciones BIOS, puertos I/O, segmentación
+- **Optimización extrema**: Código funcional en menos de 500 bytes
+- **Resolución de problemas**: Debugging sin herramientas modernas
+
+---
+
+## 📝 Licencia
+
+Este proyecto es de uso educativo.
+
+---
+
+## 👤 Autor
+
+Proyecto desarrollado como ejercicio de programación en ensamblador x86.
+
+---
+
+## 🙏 Agradecimientos
+
+- Comunidad de programadores en ensamblador
+- Documentación de NASM
+- Proyecto DOSBox
+
+---
+
+**¡Disfruta tocando el piano virtual! 🎵**
